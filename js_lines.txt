@@ -1,0 +1,2 @@
+﻿Total JS lines: 390
+1: ''
