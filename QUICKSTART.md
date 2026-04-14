@@ -1,4 +1,4 @@
-# 🚀 Quickstart — Daisy's Med Spa AI Voice Agent
+# 🚀 Quickstart — Twizitech Enterprise AI Voice Agent
 
 Complete setup guide for a **brand-new machine**. Follow every step in order.
 
@@ -11,11 +11,13 @@ Complete setup guide for a **brand-new machine**. Follow every step in order.
 | Python 3.11+ | [python.org/downloads](https://www.python.org/downloads/) |
 | Git | [git-scm.com](https://git-scm.com/downloads) |
 | A LiveKit Cloud account | [cloud.livekit.io](https://cloud.livekit.io) |
-| A Sarvam AI API key | [app.sarvam.ai](https://app.sarvam.ai) |
-| An OpenAI API key | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| A Deepgram API key (STT) | [console.deepgram.com](https://console.deepgram.com) |
+| An OpenAI API key (LLM) | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| An ElevenLabs API key (TTS) | [elevenlabs.io](https://elevenlabs.io/app/settings/api-keys) |
 | A Supabase project | [app.supabase.com](https://app.supabase.com) |
 | A Cal.com account | [app.cal.com](https://app.cal.com) |
 | A Telegram Bot (for notifications) | Create via [@BotFather](https://t.me/BotFather) |
+| TVOBIZ SIP account | [app.vobiz.ai](https://app.vobiz.ai) |
 
 ---
 
@@ -86,7 +88,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-This installs everything: LiveKit Agents, Sarvam AI, OpenAI, FastAPI, Supabase, pytz, etc.
+This installs everything: LiveKit Agents, Deepgram, OpenAI, ElevenLabs, Silero VAD, FastAPI, Supabase, etc.
 
 > ⏳ First install takes ~2–3 minutes.
 
@@ -200,14 +202,18 @@ Make sure your virtual environment is active (`(.venv)` in prompt), then:
 
 ### Terminal 1 — AI Voice Agent
 ```bash
-# Development mode (detailed logs, auto-reload)
-python agent.py dev
-
-# OR Production mode
+# ✅ Windows — always use 'start' (dev mode uses Unix pipes that break on Windows)
 python agent.py start
+
+# Mac / Linux only — dev mode with hot-reload
+# python agent.py dev
 ```
 
-Wait for: `INFO: registered worker [outbound-caller]` — agent is live ✅
+> ⚠️ **Windows users:** Always use `python agent.py start`. The `dev` mode uses Unix-style
+> IPC pipes (`duplex_unix`) that are not supported on Windows and will cause a
+> `DuplexClosed` error loop. The `start` command is equivalent and stable on all platforms.
+
+Wait for: `INFO: registered worker {"agent_name": "inbound-caller"}` — agent is live ✅
 
 ### Terminal 2 — Dashboard UI
 Open a **second terminal** in the same folder, activate the venv again, then:
@@ -234,11 +240,15 @@ Replace with your real phone number including country code.
 | Problem | Fix |
 |---|---|
 | `ModuleNotFoundError` | Run `pip install -r requirements.txt` with venv active |
+| `DuplexClosed` / IPC error loop | **Windows only:** use `python agent.py start` not `dev` |
 | `UnboundLocalError` on startup | Check your `.env` — a required key is missing |
-| No audio on calls | Verify `SARVAM_API_KEY` is correct |
+| No STT transcription | Verify `DEEPGRAM_API_KEY` is correct |
+| No TTS audio | Verify `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_ID` are correct |
 | Booking not saving | Check `SUPABASE_URL` and `SUPABASE_KEY` in `.env` |
 | No recordings | Check `SUPABASE_S3_*` env vars and that the bucket exists |
 | Agent not registered | Verify `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` |
+| Call cut off too soon (VAD) | Increase `vad_min_silence_ms` in `config.json` (try 700-800) |
+| Agent stops mid-sentence | Increase `vad_threshold` in `config.json` (try 0.6-0.7) |
 
 ---
 
